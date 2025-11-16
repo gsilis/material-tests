@@ -1,4 +1,5 @@
 import './App.css'
+import { Viewport } from './Viewport';
 
 function App() {
   return <div className="flex flex-row h-screen">
@@ -6,7 +7,7 @@ function App() {
       Picker
     </div>
     <div className="viewport flex-1 bg-sky-900">
-      Viewport
+      <Viewport />
     </div>
   </div>;
 }
