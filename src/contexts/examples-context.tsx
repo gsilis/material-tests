@@ -16,7 +16,7 @@ type ExampleContextShape = {
 
 export const ExampleContext = createContext<ExampleContextShape>({
   addExample: () => {},
-  defineLibraryForPath: (path: string, library: GLTF) => {},
+  defineLibraryForPath: (_path: string, _library: GLTF) => {},
   examples: [],
 });
 
