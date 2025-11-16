@@ -1,16 +1,10 @@
 import { createContext, useState } from "react";
 import type { GLTF } from "three/examples/jsm/Addons.js"
-
-type ExampleShape = {
-  title: string,
-  description: string,
-  libraryPath: string,
-  library?: GLTF;
-}
+import { examples as staticExamples, type Example } from "../examples";
 
 type ExampleContextShape = {
-  examples: ExampleShape[],
-  addExample: (example: ExampleShape) => void,
+  examples: Example[],
+  addExample: (example: Example) => void,
   defineLibraryForPath: (path: string, library: GLTF) => void,
 };
 
@@ -23,8 +17,8 @@ export const ExampleContext = createContext<ExampleContextShape>({
 export function ExampleProvider({
   children,
 }: { children: any }) {
-  const [examples, setExamples] = useState<ExampleShape[]>([]);
-  const addExample = (example: ExampleShape) => {
+  const [examples, setExamples] = useState<Example[]>([ ...staticExamples ]);
+  const addExample = (example: Example) => {
     setExamples((ex) => {
       return [...ex, example];
     });
