@@ -1,6 +1,5 @@
 import { fromEvent, Observable, Subscription } from "rxjs";
 import { Vector3, type PerspectiveCamera } from "three";
-import { OrbitControls } from "three/examples/jsm/Addons.js";
 
 export class ControlsManager {
   private camera: PerspectiveCamera;
@@ -36,8 +35,8 @@ export class ControlsManager {
     const width = this.dom.clientWidth;
     const height = this.dom.clientHeight;
 
-    const x = -((clientX) - (width / 2)) / 200;
-    const y = -((clientY) - (height / 2)) / 200;
+    const x = -((clientX) - (width / 2)) / 300;
+    const y = -((clientY) - (height / 2)) / 300;
 
     this.camera.position.set(x, y, this.camera.position.z);
     this.camera.lookAt(new Vector3(0, 0, 0));

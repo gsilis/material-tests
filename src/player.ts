@@ -17,6 +17,7 @@ export class Player {
 
   constructor() {
     this.camera = new PerspectiveCamera(75, 1);
+    this.camera.position.set(0, 0, 0);
     this.renderer = new WebGLRenderer({ antialias: true });
     this.renderSizeMatcher = new RenderSizeMatcher(this.renderer, this.camera);
     this.controlsManager = new ControlsManager(this.camera, this.renderer.domElement);
