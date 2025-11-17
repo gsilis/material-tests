@@ -25,7 +25,7 @@ export class DefaultScene implements ExampleScene {
     const secondaryColor = (new Color()).setHex(0x050f3b);
     const tertiaryColor = (new Color()).setHex(0x020617);
 
-    const brightMaterial = new MeshStandardMaterial({ color: brightColor, transparent: true, opacity: 0.2 });
+    const brightMaterial = new MeshStandardMaterial({ color: brightColor, transparent: true, opacity: 0.5 });
     const primaryMaterial = new MeshStandardMaterial({ color: primaryColor, transparent: true, opacity: 0.5 });
     const secondaryMaterial = new MeshStandardMaterial({ color: secondaryColor, wireframe: true, opacity: 0.2, transparent: true });
     const tertiaryMaterial = new MeshStandardMaterial({ color: tertiaryColor, wireframe: true, opacity: 0.4, transparent: true });
@@ -60,13 +60,25 @@ export class DefaultScene implements ExampleScene {
 
     const messageTopGeom = new PlaneGeometry(5, 1, 40, 10);
     const messageTop = new Mesh(messageTopGeom, brightMaterial);
-    messageTop.position.set(0, -2, 1);
+    messageTop.position.set(0, -2, 2);
     this.scene.add(messageTop);
 
     const messageBottomGeom = new PlaneGeometry(5, 1, 40, 10);
     const messageBottom = new Mesh(messageBottomGeom, brightMaterial);
-    messageBottom.position.set(0, 2, 1);
+    messageBottom.position.set(0, 2, 2);
     this.scene.add(messageBottom);
+
+    const fadedBright = brightMaterial.clone();
+    fadedBright.transparent = true;
+    fadedBright.opacity = 0.1;
+    [0.4, 0.8, 1.2, 1.6, 2].forEach((z) => {
+      [messageBottom, messageTop].forEach((mesh) => {
+        const clone = mesh.clone();
+        clone.position.z -= z;
+        clone.material = fadedBright;
+        this.scene.add(clone);
+      });
+    });
 
     this.fontManager.fontFor(FONT.helvetikerRegular).subscribe((font: Font | null) => {
       if (!font) return;
@@ -107,10 +119,22 @@ export class DefaultScene implements ExampleScene {
     const awaitingY = (awaitingPositionMax.y - awaitingPositionMin.y) / 2;
     const selectionX = (selectionPositionMax.x - selectionPositionMin.x) / 2;
     const selectionY = (selectionPositionMax.y - selectionPositionMin.y) / 2;
-    awaitingMesh.position.set(-awaitingX, awaitingY + 0.3, 1);
-    selectionMesh.position.set(-selectionX, -selectionY - 0.3, 1);
+    awaitingMesh.position.set(-awaitingX, awaitingY + 0.3, 2);
+    selectionMesh.position.set(-selectionX, -selectionY - 0.3, 2);
 
     this.scene.add(awaitingMesh);
     this.scene.add(selectionMesh);
+
+    const fadedText = textMaterial.clone();
+    fadedText.color = (new Color()).setHex(0xff8000);
+
+    [0.4, 0.8, 1.2, 1.6, 2].forEach((z) => {
+      [awaitingMesh, selectionMesh].forEach((mesh) => {
+        const clone = mesh.clone();
+        clone.position.z -= z;
+        clone.material = fadedText;
+        this.scene.add(clone);
+      });
+    });
   }
 }
