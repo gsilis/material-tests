@@ -10,9 +10,9 @@ export type Example = {
 
 export const examples: Example[] = [
   {
-    id: 'world-1',
-    title: 'World One',
-    description: 'Initial example!',
-    libraryPath: '/assets/testing.gltf',
+    id: 'metal-cube',
+    title: 'Metal Cube',
+    description: 'A metal cube with some extrusions.',
+    libraryPath: '/experiments/materials-test/metal-cube.glb',
   }
 ];

@@ -22,6 +22,9 @@ export function MenuItem({
     'py-1',
     'my-1',
     'cursor-pointer',
+    'border-1',
+    'border-transparent',
+    'hover:border-sky-500/30',
   ];
 
   if (selected) {

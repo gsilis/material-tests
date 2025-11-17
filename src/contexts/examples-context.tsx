@@ -6,11 +6,13 @@ type ExampleContextShape = {
   examples: Example[],
   addExample: (example: Example) => void,
   defineLibraryForPath: (path: string, library: GLTF) => void,
+  findExample: (exampleId: string) => Example | null,
 };
 
 export const ExampleContext = createContext<ExampleContextShape>({
   addExample: () => {},
   defineLibraryForPath: (_path: string, _library: GLTF) => {},
+  findExample: (_exampleId: string): Example | null => null,
   examples: [],
 });
 
@@ -34,6 +36,14 @@ export function ExampleProvider({
       });
     });
   };
+  const findExample = (exampleId: string): Example | null => {
+    return examples.find(ex => ex.id === exampleId) || null;
+  };
 
-  return <ExampleContext value={{ examples, addExample, defineLibraryForPath }}>{ children }</ExampleContext>;
+  return <ExampleContext value={{
+    examples,
+    addExample,
+    defineLibraryForPath,
+    findExample
+  }}>{ children }</ExampleContext>;
 }
