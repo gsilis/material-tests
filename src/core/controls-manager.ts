@@ -1,23 +1,22 @@
 import { fromEvent, Observable, Subscription } from "rxjs";
-import type { PerspectiveCamera } from "three";
+import { Vector3, type PerspectiveCamera } from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 
 export class ControlsManager {
   private camera: PerspectiveCamera;
   private dom: HTMLElement;
-  private controls: OrbitControls;
   private _mouseMove: boolean = true;
-  private _mouseObserver: Observable<MouseEvent>;
-  private _mouseSubscription?: Subscription;
+  private _mouseMoveObserver: Observable<MouseEvent>;
+  private _mouseMoveSubscription?: Subscription;
+  private _down: boolean = false;
 
   constructor(camera: PerspectiveCamera, dom: HTMLElement) {
     this.camera = camera;
     this.dom = dom;
-    this.controls = new OrbitControls(this.camera, this.dom);
-    this._mouseObserver = fromEvent<MouseEvent>(this.dom, 'mousemove');
+    this._mouseMoveObserver = fromEvent<MouseEvent>(this.dom, 'mousemove');
 
     if (this._mouseMove) {
-      this._mouseSubscription = this._mouseObserver.subscribe(this.onMouseMove.bind(this));
+      this._mouseMoveSubscription = this._mouseMoveObserver.subscribe(this.onMouseMove.bind(this));
     }
   }
 
@@ -30,6 +29,21 @@ export class ControlsManager {
   }
 
   private onMouseMove(event: MouseEvent) {
-    // console.log('Move', [event.clientX, event.clientY]);
+    if (this._down) return;
+
+    const clientY = event.clientY - this.dom.offsetTop;
+    const clientX = event.clientX - this.dom.offsetLeft;
+    const width = this.dom.clientWidth;
+    const height = this.dom.clientHeight;
+
+    const x = -((clientX) - (width / 2)) / 200;
+    const y = -((clientY) - (height / 2)) / 200;
+
+    this.camera.position.set(x, y, this.camera.position.z);
+    this.camera.lookAt(new Vector3(0, 0, 0));
+  }
+
+  teardown() {
+    this._mouseMoveSubscription && this._mouseMoveSubscription.unsubscribe();
   }
 }

@@ -13,6 +13,7 @@ export function Menu() {
   };
   const menuContentClasses: string[] = [
     'overflow-scroll',
+    'no-scrollbars',
     'flex-1'
   ];
   if (open) {

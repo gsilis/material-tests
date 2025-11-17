@@ -4,6 +4,7 @@ import type { Example } from "./examples";
 import { ControlsManager } from "./core/controls-manager";
 import type { ExampleScene } from "./interfaces/example-scene";
 import { DefaultScene } from "./default-scene";
+import { FontManager } from "./core/font-manager";
 
 export class Player {
   private camera: PerspectiveCamera;
@@ -12,13 +13,15 @@ export class Player {
   private renderSizeMatcher: RenderSizeMatcher;
   private controlsManager: ControlsManager;
   private scene: ExampleScene;
+  private fontManager: FontManager;
 
   constructor() {
     this.camera = new PerspectiveCamera(75, 1);
     this.renderer = new WebGLRenderer({ antialias: true });
     this.renderSizeMatcher = new RenderSizeMatcher(this.renderer, this.camera);
     this.controlsManager = new ControlsManager(this.camera, this.renderer.domElement);
-    this.scene = new DefaultScene(this.renderer, this.camera);
+    this.fontManager = new FontManager();
+    this.scene = new DefaultScene(this.renderer, this.camera, this.fontManager);
   }
 
   attach(dom: HTMLDivElement) {

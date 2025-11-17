@@ -35,5 +35,5 @@ export function Viewport() {
     player.attach(viewport.current);
   }, [viewport.current, initialized.current]);
 
-  return <div ref={ viewport } className="w-full h-full overflow-scroll"></div>;
+  return <div ref={ viewport } className="w-full h-full"></div>;
 }
