@@ -16,17 +16,19 @@ export class DefaultScene implements ExampleScene {
     this.camera = camera;
     this.scene = new Scene();
     this.fontManager = fontManager;
-    this.ambient = new AmbientLight(0xFFFFFF, 50);
+    this.ambient = new AmbientLight(0xFFFFFF, 100);
   }
 
   setup() {
+    const brightColor = (new Color()).setHex(0x401a00);
     const primaryColor = (new Color()).setHex(0x140800);
     const secondaryColor = (new Color()).setHex(0x050f3b);
     const tertiaryColor = (new Color()).setHex(0x020617);
 
-    const primaryMaterial = new MeshStandardMaterial({ color: primaryColor, wireframe: true });
+    const brightMaterial = new MeshStandardMaterial({ color: brightColor, transparent: true, opacity: 0.2 });
+    const primaryMaterial = new MeshStandardMaterial({ color: primaryColor, transparent: true, opacity: 0.5 });
     const secondaryMaterial = new MeshStandardMaterial({ color: secondaryColor, wireframe: true, opacity: 0.2, transparent: true });
-    const tertiaryMaterial = new MeshStandardMaterial({ color: tertiaryColor, wireframe: true, opacity: 0.2, transparent: true });
+    const tertiaryMaterial = new MeshStandardMaterial({ color: tertiaryColor, wireframe: true, opacity: 0.4, transparent: true });
 
     const planeGeom = new PlaneGeometry(100, 100, 200, 200);
     const planeMesh = new Mesh(planeGeom, tertiaryMaterial);
@@ -39,6 +41,10 @@ export class DefaultScene implements ExampleScene {
 
     for (let multiX = -start; multiX < start; multiX++) {
       for (let multiY = -start; multiY < start; multiY++) {
+        const innerx = multiX > -2 && multiX < 2;
+        const innery = multiY > -2 && multiY < 2;
+        if (innerx && innery) continue;
+
         const boxGeom = new BoxGeometry(1, 1, 1, 5, 5, 5);
         const boxMesh = new Mesh(boxGeom, secondaryMaterial);
         boxMesh.position.set(multiX * 2, multiY * 2, 0.5);
@@ -47,10 +53,20 @@ export class DefaultScene implements ExampleScene {
       }
     }
 
-    const messagePlaneGeom = new PlaneGeometry(5, 5, 60, 60);
+    const messagePlaneGeom = new PlaneGeometry(5, 5, 20, 20);
     const messagePlane = new Mesh(messagePlaneGeom, primaryMaterial);
-    messagePlane.position.set(0, 0, 2);
+    messagePlane.position.set(0, 0, 0.5);
     this.scene.add(messagePlane);
+
+    const messageTopGeom = new PlaneGeometry(5, 1, 40, 10);
+    const messageTop = new Mesh(messageTopGeom, brightMaterial);
+    messageTop.position.set(0, -2, 1);
+    this.scene.add(messageTop);
+
+    const messageBottomGeom = new PlaneGeometry(5, 1, 40, 10);
+    const messageBottom = new Mesh(messageBottomGeom, brightMaterial);
+    messageBottom.position.set(0, 2, 1);
+    this.scene.add(messageBottom);
 
     this.fontManager.fontFor(FONT.helvetikerRegular).subscribe((font: Font | null) => {
       if (!font) return;
@@ -91,8 +107,8 @@ export class DefaultScene implements ExampleScene {
     const awaitingY = (awaitingPositionMax.y - awaitingPositionMin.y) / 2;
     const selectionX = (selectionPositionMax.x - selectionPositionMin.x) / 2;
     const selectionY = (selectionPositionMax.y - selectionPositionMin.y) / 2;
-    awaitingMesh.position.set(-awaitingX, awaitingY + 0.3, 2.5);
-    selectionMesh.position.set(-selectionX, -selectionY - 0.3, 2.5);
+    awaitingMesh.position.set(-awaitingX, awaitingY + 0.3, 1);
+    selectionMesh.position.set(-selectionX, -selectionY - 0.3, 1);
 
     this.scene.add(awaitingMesh);
     this.scene.add(selectionMesh);
