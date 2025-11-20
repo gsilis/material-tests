@@ -28,8 +28,8 @@ export class DefaultScene implements ExampleScene {
   private fontManager: FontManager;
   private effectComposer: EffectComposer;
   private selectiveBloomEffect?: SelectiveBloomEffect;
-  private intensityAnimation: SineValue = new SineValue(Date.now(), 1 / 1000, 2, 15);
-  private rotationAnimation: LinearValue = new LinearValue(Date.now(), 1);
+  private intensityAnimation: SineValue = new SineValue(Date.now(), 1 / 10000, 2, 15);
+  private rotationAnimation: LinearValue = new LinearValue(Date.now(), 0.2);
   private sphere?: Mesh;
   private toruses: Mesh[] = [];
 
