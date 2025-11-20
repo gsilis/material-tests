@@ -33,7 +33,7 @@ export class Player {
   attach(dom: HTMLDivElement) {
     this.dom = dom;
     this.dimensionsWatcher = new DimensionWatcher(this.dom);
-    this.mouseWatcher = new MouseWatcher(this.camera, this.dom, this.dimensionsWatcher);
+    this.mouseWatcher = new MouseWatcher(this.dom, this.dimensionsWatcher);
 
     this.dimensionsWatcher.subscribe(this.onDimensions.bind(this));
     this.scene = new DefaultScene(this.renderer, this.camera, this.fontManager, this.effectsComposer, this.mouseWatcher);

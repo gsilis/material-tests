@@ -20,7 +20,7 @@ export class FontManager {
         newSubject.next(data);
       },
       () => {},
-      (err: unknown) => {
+      (_err: unknown) => {
         newSubject.error(`Could not load font '${path}'`);
       }
     );

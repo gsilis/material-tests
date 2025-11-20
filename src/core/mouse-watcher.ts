@@ -1,11 +1,10 @@
 import { BehaviorSubject, fromEvent, type Observable, type Observer, type Subscription } from "rxjs";
-import { Vector2, type PerspectiveCamera } from "three";
+import { Vector2 } from "three";
 import type { DimensionWatcher } from "./dimension-watcher";
 
 type FnOrObserver = ((data: Vector2) => void) | Observer<Vector2>;
 
 export class MouseWatcher {
-  private camera: PerspectiveCamera;
   private dom: HTMLElement;
   private moveObservable: Observable<MouseEvent>;
   private downObservable: Observable<MouseEvent>;
@@ -20,8 +19,7 @@ export class MouseWatcher {
   private downSubscription?: Subscription;
   private upSubscription?: Subscription;
 
-  constructor(camera: PerspectiveCamera, dom: HTMLElement, dimensions: DimensionWatcher) {
-    this.camera = camera;
+  constructor(dom: HTMLElement, dimensions: DimensionWatcher) {
     this.dom = dom;
     this.dimensionWatcher = dimensions;
     this.moveObservable = fromEvent<MouseEvent>(this.dom, 'mousemove');
@@ -60,11 +58,11 @@ export class MouseWatcher {
     this.behaviorSubject.next(this.dimensions);
   }
 
-  private onDown(event: MouseEvent) {
+  private onDown(_event: MouseEvent) {
     this.pressed = true;
   }
 
-  private onUp(event: MouseEvent) {
+  private onUp(_event: MouseEvent) {
     this.pressed = false;
   }
 }
