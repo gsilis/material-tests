@@ -1,140 +1,102 @@
-import { AmbientLight, BoxGeometry, BoxHelper, Color, DoubleSide, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, Scene, ShapeGeometry, type PerspectiveCamera, type WebGLRenderer } from "three";
+import { AmbientLight, BoxGeometry, CylinderGeometry, DodecahedronGeometry, FloatType, HalfFloatType, Material, Mesh, MeshBasicMaterial, MeshPhongMaterial, MeshStandardMaterial, Scene, Sphere, SphereGeometry, SpotLight, TorusGeometry, Vector3, type PerspectiveCamera, type WebGLRenderer } from "three";
 import type { ExampleScene } from "./interfaces/example-scene";
 import type { FontManager } from "./core/font-manager";
-import { FONT } from "./constants/font";
-import type { Font } from "three/examples/jsm/Addons.js";
+import { BloomEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
+import { Time } from "./core/time";
+import { LinearValue } from "./core/linear-value";
+import { SineValue } from "./core/sine-value";
+
+const rad = Math.PI / 180;
 
 export class DefaultScene implements ExampleScene {
   private renderer: WebGLRenderer;
   private camera: PerspectiveCamera;
-  private scene: Scene;
   private fontManager: FontManager;
+  private lineMaterial?: Material;
+  private box?: Mesh;
+  private box2?: Mesh;
+  private box3?: Mesh;
+  private sphere?: Mesh;
+  private scene: Scene;
   private ambient: AmbientLight;
+  private composer: EffectComposer;
+  private rotation = 0.2;
+  private intensity = 1.2;
+  private bloomEffect?: BloomEffect;
+  private boxRotator = new LinearValue(Date.now(), 5);
+  private sineRotator: SineValue = new SineValue(Date.now(), 1 / 1000, -5, 100);
+  private scaleValue: SineValue = new SineValue(Date.now(), 1 / 1000, 1.5, 1);
 
   constructor(renderer: WebGLRenderer, camera: PerspectiveCamera, fontManager: FontManager) {
     this.renderer = renderer;
     this.camera = camera;
-    this.scene = new Scene();
     this.fontManager = fontManager;
-    this.ambient = new AmbientLight(0xFFFFFF, 100);
+    this.scene = new Scene();
+    this.ambient = new AmbientLight(0xFFFFFF, 1);
+    this.composer = new EffectComposer(this.renderer, { multisampling: 8, frameBufferType: HalfFloatType });
   }
 
-  setup() {
-    const brightColor = (new Color()).setHex(0x401a00);
-    const primaryColor = (new Color()).setHex(0x140800);
-    const secondaryColor = (new Color()).setHex(0x050f3b);
-    const tertiaryColor = (new Color()).setHex(0x020617);
+  setup(): void {
+    this.lineMaterial = new MeshBasicMaterial({ color: 0x00FFFF, toneMapped: false, wireframe: false });
+    this.box = new Mesh(
+      new TorusGeometry(1, 0.01, 5),
+      this.lineMaterial,
+    );
+    this.box.rotateX(rad * 20);
+    this.box2 = new Mesh(
+      new TorusGeometry(1, 0.01, 5),
+      this.lineMaterial,
+    );
+    this.box3 = new Mesh(
+      new TorusGeometry(1, 0.01, 5),
+      this.lineMaterial,
+    );
+    this.sphere = new Mesh(
+      new SphereGeometry(0.2, 32, 32),
+      this.lineMaterial
+    );
 
-    const brightMaterial = new MeshStandardMaterial({ color: brightColor, transparent: true, opacity: 0.5 });
-    const primaryMaterial = new MeshStandardMaterial({ color: primaryColor, transparent: true, opacity: 0.5 });
-    const secondaryMaterial = new MeshStandardMaterial({ color: secondaryColor, wireframe: true, opacity: 0.2, transparent: true });
-    const tertiaryMaterial = new MeshStandardMaterial({ color: tertiaryColor, wireframe: true, opacity: 0.4, transparent: true });
+    const spot = new SpotLight(0xFFFFFF, 20, 0, Math.PI / 8);
+    spot.target = this.box;
+    spot.position.set(3, 3, 3);
+    spot.target.position.set(0, 0, 0);
+    this.scene.add(spot);
 
-    const planeGeom = new PlaneGeometry(100, 100, 200, 200);
-    const planeMesh = new Mesh(planeGeom, tertiaryMaterial);
-    planeMesh.position.set(0, 0, 0);
-    this.scene.add(planeMesh);
+    // this.scene.add(this.ambient);
+    this.scene.add(this.box);
+    this.scene.add(this.box2);
+    this.scene.add(this.box3);
+    this.scene.add(this.sphere);
+    this.camera.position.z = 10;
 
-    // This should always be EVEN
-    const runs = 100;
-    const start = (runs / 2);
+    this.camera.lookAt(new Vector3(0, 0, 0));
 
-    for (let multiX = -start; multiX < start; multiX++) {
-      for (let multiY = -start; multiY < start; multiY++) {
-        const innerx = multiX > -2 && multiX < 2;
-        const innery = multiY > -2 && multiY < 2;
-        if (innerx && innery) continue;
-
-        const boxGeom = new BoxGeometry(1, 1, 1, 5, 5, 5);
-        const boxMesh = new Mesh(boxGeom, secondaryMaterial);
-        boxMesh.position.set(multiX * 2, multiY * 2, 0.5);
-
-        this.scene.add(boxMesh);
-      }
-    }
-
-    const messagePlaneGeom = new PlaneGeometry(5, 5, 20, 20);
-    const messagePlane = new Mesh(messagePlaneGeom, primaryMaterial);
-    messagePlane.position.set(0, 0, 0.5);
-    this.scene.add(messagePlane);
-
-    const messageTopGeom = new PlaneGeometry(5, 1, 40, 10);
-    const messageTop = new Mesh(messageTopGeom, brightMaterial);
-    messageTop.position.set(0, -2, 2);
-    this.scene.add(messageTop);
-
-    const messageBottomGeom = new PlaneGeometry(5, 1, 40, 10);
-    const messageBottom = new Mesh(messageBottomGeom, brightMaterial);
-    messageBottom.position.set(0, 2, 2);
-    this.scene.add(messageBottom);
-
-    const fadedBright = brightMaterial.clone();
-    fadedBright.transparent = true;
-    fadedBright.opacity = 0.1;
-    [0.4, 0.8, 1.2, 1.6, 2].forEach((z) => {
-      [messageBottom, messageTop].forEach((mesh) => {
-        const clone = mesh.clone();
-        clone.position.z -= z;
-        clone.material = fadedBright;
-        this.scene.add(clone);
-      });
+    const renderPass = new RenderPass(this.scene, this.camera);
+    this.bloomEffect = new BloomEffect({
+      mipmapBlur: true,
+      luminanceThreshold: 0.4,
+      intensity: 2,
     });
+    const bloomPass = new EffectPass(this.camera, this.bloomEffect);
 
-    this.fontManager.fontFor(FONT.helvetikerRegular).subscribe((font: Font | null) => {
-      if (!font) return;
-      this.addMessage(font);
-    });
-
-    this.camera.position.z = 15;
-    this.scene.add(this.ambient);
+    this.composer.setSize(3000, 3000);
+    this.composer.addPass(renderPass);
+    this.composer.addPass(bloomPass);
     this.renderer.setAnimationLoop(this.render.bind(this));
   }
-
-  teardown() {
-    this.renderer.setAnimationLoop(null);
+  teardown(): void {
+    throw new Error("Method not implemented.");
   }
-
-  render() {
-    this.renderer.render(this.scene, this.camera);
-  }
-
-  private addMessage(font: Font) {
-    console.log('DONE');
-    const color = (new Color()).setHex(0xFFFFFF);
-    const textMaterial = new MeshBasicMaterial({ color, side: DoubleSide });
-    const awaitingShape = font.generateShapes('AWAITING', 0.4);
-    const selectionShape = font.generateShapes('SELECTION', 0.4);
-    const awaiting = new ShapeGeometry(awaitingShape, 20);
-    const selection = new ShapeGeometry(selectionShape, 20);
-    const awaitingMesh = new Mesh(awaiting, textMaterial);
-    const selectionMesh = new Mesh(selection, textMaterial);
-
-    awaiting.computeBoundingBox();
-    selection.computeBoundingBox();
-    const awaitingPositionMin = awaiting.boundingBox?.min || { x: 0, y: 0 };
-    const awaitingPositionMax = awaiting.boundingBox?.max || { x: 0, y: 0 };
-    const selectionPositionMin = selection.boundingBox?.min || { x: 0, y: 0 };
-    const selectionPositionMax = selection.boundingBox?.max || { x: 0, y: 0 };
-    const awaitingX = (awaitingPositionMax.x - awaitingPositionMin.x) / 2;
-    const awaitingY = (awaitingPositionMax.y - awaitingPositionMin.y) / 2;
-    const selectionX = (selectionPositionMax.x - selectionPositionMin.x) / 2;
-    const selectionY = (selectionPositionMax.y - selectionPositionMin.y) / 2;
-    awaitingMesh.position.set(-awaitingX, awaitingY + 0.3, 2);
-    selectionMesh.position.set(-selectionX, -selectionY - 0.3, 2);
-
-    this.scene.add(awaitingMesh);
-    this.scene.add(selectionMesh);
-
-    const fadedText = textMaterial.clone();
-    fadedText.color = (new Color()).setHex(0xff8000);
-
-    [0.4, 0.8, 1.2, 1.6, 2].forEach((z) => {
-      [awaitingMesh, selectionMesh].forEach((mesh) => {
-        const clone = mesh.clone();
-        clone.position.z -= z;
-        clone.material = fadedText;
-        this.scene.add(clone);
-      });
-    });
+  render(time: number): void {
+    this.boxRotator.advance(time);
+    this.sineRotator.advance(time);
+    this.scaleValue.advance(time);
+    // this.box?.scale.set(this.scaleValue.value, this.scaleValue.value, this.scaleValue.value);
+    this.box?.rotateY(this.boxRotator.value);
+    this.box2?.rotateX(this.boxRotator.value);
+    this.box3?.rotateY(this.boxRotator.value);
+    this.box3?.rotateX(this.boxRotator.value);
+    // this.bloomEffect && (this.bloomEffect.intensity = this.sineRotator.value);
+    this.composer.render();
   }
 }

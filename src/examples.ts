@@ -1,11 +1,8 @@
-import type { GLTF } from "three/examples/jsm/Addons.js";
-
 export type Example = {
   id: string,
   title: string,
   description: string,
   libraryPath: string,
-  library?: GLTF;
 }
 
 export const examples: Example[] = [

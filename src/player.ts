@@ -5,6 +5,7 @@ import { ControlsManager } from "./core/controls-manager";
 import type { ExampleScene } from "./interfaces/example-scene";
 import { DefaultScene } from "./default-scene";
 import { FontManager } from "./core/font-manager";
+import { ExampleLoader } from "./core/example-loader";
 
 export class Player {
   private camera: PerspectiveCamera;
@@ -14,6 +15,7 @@ export class Player {
   private controlsManager: ControlsManager;
   private scene: ExampleScene;
   private fontManager: FontManager;
+  private exampleLoader: ExampleLoader;
 
   constructor() {
     this.camera = new PerspectiveCamera(75, 1);
@@ -23,6 +25,7 @@ export class Player {
     this.controlsManager = new ControlsManager(this.camera, this.renderer.domElement);
     this.fontManager = new FontManager();
     this.scene = new DefaultScene(this.renderer, this.camera, this.fontManager);
+    this.exampleLoader = new ExampleLoader();
   }
 
   attach(dom: HTMLDivElement) {
@@ -34,15 +37,7 @@ export class Player {
   }
 
   load(example: Example) {
-    console.log('Loading', example.title);
-    /**
-     * The context may already have the GLTF loaded, or if it does not
-     * this should trigger it and wait.
-     * 
-     * Lighting should be controlled outside of the scene itself.
-     * This is only loading the GLTF asset, and putting it in origin.
-     * Lighting, camera, all that will need to be done here.
-     */
+    this.exampleLoader;
   }
 
   unload() {
