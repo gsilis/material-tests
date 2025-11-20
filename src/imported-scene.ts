@@ -3,6 +3,8 @@ import type { FontManager } from "./core/font-manager";
 import { RenderPass, type EffectComposer } from "postprocessing";
 import type { ExampleScene } from "./interfaces/example-scene";
 import { OrbitControls, type GLTF } from "three/examples/jsm/Addons.js";
+import type { LightHelper } from "./interfaces/light-helper";
+import { TwoLightManager } from "./core/two-light-manager";
 
 export class ImportedScene implements ExampleScene {
   private renderer: WebGLRenderer;
@@ -10,8 +12,8 @@ export class ImportedScene implements ExampleScene {
   private effectComposer: EffectComposer;
   private library: GLTF;
   private scene: Scene = new Scene();
-  private directionalLight: DirectionalLight = new DirectionalLight(0xFFFFFF, 10);
   private orbitControls?: OrbitControls;
+  private lightHelper: LightHelper;
 
   constructor(
     renderer: WebGLRenderer,
@@ -24,14 +26,12 @@ export class ImportedScene implements ExampleScene {
     this.camera = camera;
     this.effectComposer = effectComposer;
     this.library = library;
-    this.directionalLight.position.set(2, 5, 5);
-    this.directionalLight.target.position.set(0, 0, 0);
+    this.lightHelper = new TwoLightManager();
   }
 
   setup() {
     this.scene.background = (new Color()).setHex(0x010412);
     this.effectComposer.addPass(new RenderPass(this.scene, this.camera));
-    this.scene.add(this.directionalLight);
     this.camera.position.set(0, 2, 5);
     this.camera.lookAt(new Vector3(0, 0, 0));
     this.scene.add(this.library.scene);
@@ -40,6 +40,7 @@ export class ImportedScene implements ExampleScene {
     this.orbitControls.autoRotateSpeed = 0.1;
     this.orbitControls.enableDamping = false;
     this.orbitControls.dampingFactor = 0;
+    this.lightHelper.setup(this.scene);
     this.renderer.setAnimationLoop(this.render.bind(this));
   }
 
