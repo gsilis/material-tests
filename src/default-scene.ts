@@ -13,6 +13,8 @@ const ringRotations: [number, number][] = [
   [-1, -2],
   [2, -0.5],
   [-0.1, 2.7],
+  [1.1, 0],
+  [0, 1.1],
 ];
 const sphereRadius = 0.2;
 const torusRadius = 1;
@@ -74,7 +76,7 @@ export class DefaultScene implements ExampleScene {
   }
 
   teardown(): void {
-    
+    this.renderer.setAnimationLoop(null);
   }
 
   render(time: number): void {

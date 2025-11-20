@@ -6,6 +6,8 @@ import { DefaultScene } from "./default-scene";
 import { FontManager } from "./core/font-manager";
 import { ExampleLoader } from "./core/example-loader";
 import { EffectComposer } from "postprocessing";
+import type { GLTF } from "three/examples/jsm/Addons.js";
+import { ImportedScene } from "./imported-scene";
 
 export class Player {
   private camera: PerspectiveCamera;
@@ -36,8 +38,14 @@ export class Player {
     this.dom.appendChild(this.renderer.domElement);
   }
 
-  load(_example: Example) {
-    this.exampleLoader;
+  load(example: Example) {
+    this.exampleLoader.load(example.id, example.libraryPath).subscribe((library: GLTF | null) => {
+      if (!library) return;
+
+      this.unload();
+      this.scene = new ImportedScene(this.renderer, this.camera, this.fontManager, this.effectsComposer, library);
+      this.scene.setup();
+    });
   }
 
   unload() {
@@ -46,6 +54,7 @@ export class Player {
      * the new scene is set. Maybe this could fade out?
      */
     console.log('Unloading...');
+    this.effectsComposer.removeAllPasses();
     this.scene.teardown();
   }
 }
