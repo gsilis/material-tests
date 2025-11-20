@@ -4,6 +4,8 @@ import type { FontManager } from "./core/font-manager";
 import { Color, Mesh, MeshBasicMaterial, Scene, SphereGeometry, TorusGeometry, type PerspectiveCamera, type WebGLRenderer } from "three";
 import { SineValue } from "./core/sine-value";
 import { LinearValue } from "./core/linear-value";
+import type { MouseWatcher } from "./core/mouse-watcher";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
 
 const ringRotations: [number, number][] = [
   [0.1, 2],
@@ -30,8 +32,9 @@ export class DefaultScene implements ExampleScene {
   private rotationAnimation: LinearValue = new LinearValue(Date.now(), 0.2);
   private sphere?: Mesh;
   private toruses: Mesh[] = [];
+  private orbitControls?: OrbitControls;
 
-  constructor(renderer: WebGLRenderer, camera: PerspectiveCamera, _fontManager: FontManager, effectComposer: EffectComposer) {
+  constructor(renderer: WebGLRenderer, camera: PerspectiveCamera, _fontManager: FontManager, effectComposer: EffectComposer, _mouseWatcher: MouseWatcher) {
     this.scene = new Scene();
     this.renderer = renderer;
     this.camera = camera;
@@ -70,13 +73,17 @@ export class DefaultScene implements ExampleScene {
     this.selectiveBloomEffect.selection = new Selection([this.sphere]);
     this.effectComposer.addPass(new RenderPass(this.scene, this.camera));
     this.effectComposer.addPass(new EffectPass(this.camera, this.selectiveBloomEffect));
-    this.camera.position.z = 10;
+    this.camera.position.z = 15;
+    this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.orbitControls.autoRotate = true;
+    this.orbitControls.autoRotateSpeed = 5;
 
     this.renderer.setAnimationLoop(this.render.bind(this));
   }
 
   teardown(): void {
     this.renderer.setAnimationLoop(null);
+    this.orbitControls?.dispose();
   }
 
   render(time: number): void {
