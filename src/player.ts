@@ -1,7 +1,6 @@
-import { AmbientLight, HalfFloatType, PerspectiveCamera, WebGLRenderer } from "three";
+import { HalfFloatType, PerspectiveCamera, WebGLRenderer } from "three";
 import { RenderSizeMatcher } from "./core/render-size-matcher";
 import type { Example } from "./examples";
-import { ControlsManager } from "./core/controls-manager";
 import type { ExampleScene } from "./interfaces/example-scene";
 import { DefaultScene } from "./default-scene";
 import { FontManager } from "./core/font-manager";
@@ -13,7 +12,6 @@ export class Player {
   private dom?: HTMLElement;
   private renderer: WebGLRenderer;
   private renderSizeMatcher: RenderSizeMatcher;
-  private controlsManager: ControlsManager;
   private scene: ExampleScene;
   private fontManager: FontManager;
   private exampleLoader: ExampleLoader;
@@ -25,7 +23,6 @@ export class Player {
     this.renderer = new WebGLRenderer({ antialias: true });
     this.effectsComposer = new EffectComposer(this.renderer, { multisampling: 8, frameBufferType: HalfFloatType });
     this.renderSizeMatcher = new RenderSizeMatcher(this.renderer, this.camera, this.effectsComposer);
-    this.controlsManager = new ControlsManager(this.camera, this.renderer.domElement);
     this.fontManager = new FontManager();
     this.scene = new DefaultScene(this.renderer, this.camera, this.fontManager, this.effectsComposer);
     this.exampleLoader = new ExampleLoader();
@@ -39,7 +36,7 @@ export class Player {
     this.dom.appendChild(this.renderer.domElement);
   }
 
-  load(example: Example) {
+  load(_example: Example) {
     this.exampleLoader;
   }
 

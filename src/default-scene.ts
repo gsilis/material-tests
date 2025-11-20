@@ -1,13 +1,10 @@
 import { EffectPass, RenderPass, Selection, SelectiveBloomEffect, type EffectComposer } from "postprocessing";
 import type { ExampleScene } from "./interfaces/example-scene";
 import type { FontManager } from "./core/font-manager";
-import { BoxGeometry, Color, DoubleSide, Mesh, MeshBasicMaterial, Scene, ShapeGeometry, SphereGeometry, TorusGeometry, type PerspectiveCamera, type WebGLRenderer } from "three";
+import { Color, Mesh, MeshBasicMaterial, Scene, SphereGeometry, TorusGeometry, type PerspectiveCamera, type WebGLRenderer } from "three";
 import { SineValue } from "./core/sine-value";
 import { LinearValue } from "./core/linear-value";
-import { Font } from "three/examples/jsm/Addons.js";
-import { FONT } from "./constants/font";
 
-const rad = Math.PI / 180;
 const ringRotations: [number, number][] = [
   [0.1, 2],
   [3, -1],
@@ -15,7 +12,7 @@ const ringRotations: [number, number][] = [
   [-3, 0.9],
   [-1, -2],
   [2, -0.5],
-  [0.1, 2.1],
+  [-0.1, 2.7],
 ];
 const sphereRadius = 0.2;
 const torusRadius = 1;
@@ -25,7 +22,6 @@ export class DefaultScene implements ExampleScene {
   private scene: Scene;
   private renderer: WebGLRenderer;
   private camera: PerspectiveCamera;
-  private fontManager: FontManager;
   private effectComposer: EffectComposer;
   private selectiveBloomEffect?: SelectiveBloomEffect;
   private intensityAnimation: SineValue = new SineValue(Date.now(), 1 / 10000, 2, 15);
@@ -33,11 +29,10 @@ export class DefaultScene implements ExampleScene {
   private sphere?: Mesh;
   private toruses: Mesh[] = [];
 
-  constructor(renderer: WebGLRenderer, camera: PerspectiveCamera, fontManager: FontManager, effectComposer: EffectComposer) {
+  constructor(renderer: WebGLRenderer, camera: PerspectiveCamera, _fontManager: FontManager, effectComposer: EffectComposer) {
     this.scene = new Scene();
     this.renderer = renderer;
     this.camera = camera;
-    this.fontManager = fontManager;
     this.effectComposer = effectComposer;
   }
 
@@ -45,7 +40,6 @@ export class DefaultScene implements ExampleScene {
     this.scene.background = (new Color()).setHex(0x010412);
     const sphereMaterial = new MeshBasicMaterial({ color: 0x83c0fc });
     const ringMaterial = new MeshBasicMaterial({ color: 0x2061a1 });
-    const textMaterial = new MeshBasicMaterial({ color: 0x69a5ff, side: DoubleSide });
     this.sphere = new Mesh(
       new SphereGeometry(sphereRadius),
       sphereMaterial
@@ -63,23 +57,6 @@ export class DefaultScene implements ExampleScene {
       torus.rotateY(y);
 
       return torus;
-    });
-    this.fontManager.fontFor(FONT.helvetikerRegular).subscribe((font: Font | null) => {
-      if (!font) return;
-      const textShape = font.generateShapes('SELECT EXPERIMENT', 0.2);
-      const geom = new ShapeGeometry(textShape, 20);
-      const mesh = new Mesh(geom, textMaterial);
-      geom.computeBoundingBox();
-      
-      const minx = geom.boundingBox?.min.x || 0;
-      const maxx = geom.boundingBox?.max.x || 0;
-      const miny = geom.boundingBox?.min.y || 0;
-      const maxy = geom.boundingBox?.max.y || 0;
-      const x = (maxx - minx) / 2;
-      const y = (maxy - miny) / 2;
-      mesh.position.set(-x, -0.75, 1);
-
-      this.scene.add(mesh);
     });
 
     [this.sphere, ...this.toruses].forEach(mesh => this.scene.add(mesh));
