@@ -1,102 +1,121 @@
-import { AmbientLight, BoxGeometry, CylinderGeometry, DodecahedronGeometry, FloatType, HalfFloatType, Material, Mesh, MeshBasicMaterial, MeshPhongMaterial, MeshStandardMaterial, Scene, Sphere, SphereGeometry, SpotLight, TorusGeometry, Vector3, type PerspectiveCamera, type WebGLRenderer } from "three";
+import { EffectPass, RenderPass, Selection, SelectiveBloomEffect, type EffectComposer } from "postprocessing";
 import type { ExampleScene } from "./interfaces/example-scene";
 import type { FontManager } from "./core/font-manager";
-import { BloomEffect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
-import { Time } from "./core/time";
-import { LinearValue } from "./core/linear-value";
+import { BoxGeometry, Color, DoubleSide, Mesh, MeshBasicMaterial, Scene, ShapeGeometry, SphereGeometry, TorusGeometry, type PerspectiveCamera, type WebGLRenderer } from "three";
 import { SineValue } from "./core/sine-value";
+import { LinearValue } from "./core/linear-value";
+import { Font } from "three/examples/jsm/Addons.js";
+import { FONT } from "./constants/font";
 
 const rad = Math.PI / 180;
+const ringRotations: [number, number][] = [
+  [0.1, 2],
+  [3, -1],
+  [0.2, 1.5],
+  [-3, 0.9],
+  [-1, -2],
+  [2, -0.5],
+  [0.1, 2.1],
+];
+const sphereRadius = 0.2;
+const torusRadius = 1;
+const torusLineWidth = 0.01;
 
 export class DefaultScene implements ExampleScene {
+  private scene: Scene;
   private renderer: WebGLRenderer;
   private camera: PerspectiveCamera;
   private fontManager: FontManager;
-  private lineMaterial?: Material;
-  private box?: Mesh;
-  private box2?: Mesh;
-  private box3?: Mesh;
+  private effectComposer: EffectComposer;
+  private selectiveBloomEffect?: SelectiveBloomEffect;
+  private intensityAnimation: SineValue = new SineValue(Date.now(), 1 / 1000, 2, 15);
+  private rotationAnimation: LinearValue = new LinearValue(Date.now(), 1);
   private sphere?: Mesh;
-  private scene: Scene;
-  private ambient: AmbientLight;
-  private composer: EffectComposer;
-  private rotation = 0.2;
-  private intensity = 1.2;
-  private bloomEffect?: BloomEffect;
-  private boxRotator = new LinearValue(Date.now(), 5);
-  private sineRotator: SineValue = new SineValue(Date.now(), 1 / 1000, -5, 100);
-  private scaleValue: SineValue = new SineValue(Date.now(), 1 / 1000, 1.5, 1);
+  private toruses: Mesh[] = [];
 
-  constructor(renderer: WebGLRenderer, camera: PerspectiveCamera, fontManager: FontManager) {
+  constructor(renderer: WebGLRenderer, camera: PerspectiveCamera, fontManager: FontManager, effectComposer: EffectComposer) {
+    this.scene = new Scene();
     this.renderer = renderer;
     this.camera = camera;
     this.fontManager = fontManager;
-    this.scene = new Scene();
-    this.ambient = new AmbientLight(0xFFFFFF, 1);
-    this.composer = new EffectComposer(this.renderer, { multisampling: 8, frameBufferType: HalfFloatType });
+    this.effectComposer = effectComposer;
   }
 
   setup(): void {
-    this.lineMaterial = new MeshBasicMaterial({ color: 0x00FFFF, toneMapped: false, wireframe: false });
-    this.box = new Mesh(
-      new TorusGeometry(1, 0.01, 5),
-      this.lineMaterial,
-    );
-    this.box.rotateX(rad * 20);
-    this.box2 = new Mesh(
-      new TorusGeometry(1, 0.01, 5),
-      this.lineMaterial,
-    );
-    this.box3 = new Mesh(
-      new TorusGeometry(1, 0.01, 5),
-      this.lineMaterial,
-    );
+    this.scene.background = (new Color()).setHex(0x010412);
+    const sphereMaterial = new MeshBasicMaterial({ color: 0x83c0fc });
+    const ringMaterial = new MeshBasicMaterial({ color: 0x2061a1 });
+    const textMaterial = new MeshBasicMaterial({ color: 0x69a5ff, side: DoubleSide });
     this.sphere = new Mesh(
-      new SphereGeometry(0.2, 32, 32),
-      this.lineMaterial
+      new SphereGeometry(sphereRadius),
+      sphereMaterial
     );
+    this.toruses = ringRotations.map<Mesh>(([x, y]) => {
+      const torus = new Mesh(
+        new TorusGeometry(
+          torusRadius,
+          torusLineWidth,
+        ),
+        ringMaterial
+      );
 
-    const spot = new SpotLight(0xFFFFFF, 20, 0, Math.PI / 8);
-    spot.target = this.box;
-    spot.position.set(3, 3, 3);
-    spot.target.position.set(0, 0, 0);
-    this.scene.add(spot);
+      torus.rotateX(x);
+      torus.rotateY(y);
 
-    // this.scene.add(this.ambient);
-    this.scene.add(this.box);
-    this.scene.add(this.box2);
-    this.scene.add(this.box3);
-    this.scene.add(this.sphere);
+      return torus;
+    });
+    this.fontManager.fontFor(FONT.helvetikerRegular).subscribe((font: Font | null) => {
+      if (!font) return;
+      const textShape = font.generateShapes('SELECT EXPERIMENT', 0.2);
+      const geom = new ShapeGeometry(textShape, 20);
+      const mesh = new Mesh(geom, textMaterial);
+      geom.computeBoundingBox();
+      
+      const minx = geom.boundingBox?.min.x || 0;
+      const maxx = geom.boundingBox?.max.x || 0;
+      const miny = geom.boundingBox?.min.y || 0;
+      const maxy = geom.boundingBox?.max.y || 0;
+      const x = (maxx - minx) / 2;
+      const y = (maxy - miny) / 2;
+      mesh.position.set(-x, -0.75, 1);
+
+      this.scene.add(mesh);
+    });
+
+    [this.sphere, ...this.toruses].forEach(mesh => this.scene.add(mesh));
+    this.selectiveBloomEffect = new SelectiveBloomEffect(this.scene, this.camera, {
+      mipmapBlur: true,
+      luminanceThreshold: 0.3,
+      intensity: 0,
+    });
+    this.selectiveBloomEffect.selection = new Selection([this.sphere]);
+    this.effectComposer.addPass(new RenderPass(this.scene, this.camera));
+    this.effectComposer.addPass(new EffectPass(this.camera, this.selectiveBloomEffect));
     this.camera.position.z = 10;
 
-    this.camera.lookAt(new Vector3(0, 0, 0));
-
-    const renderPass = new RenderPass(this.scene, this.camera);
-    this.bloomEffect = new BloomEffect({
-      mipmapBlur: true,
-      luminanceThreshold: 0.4,
-      intensity: 2,
-    });
-    const bloomPass = new EffectPass(this.camera, this.bloomEffect);
-
-    this.composer.setSize(3000, 3000);
-    this.composer.addPass(renderPass);
-    this.composer.addPass(bloomPass);
     this.renderer.setAnimationLoop(this.render.bind(this));
   }
+
   teardown(): void {
-    throw new Error("Method not implemented.");
+    
   }
+
   render(time: number): void {
-    this.boxRotator.advance(time);
-    this.sineRotator.advance(time);
-    this.scaleValue.advance(time);
-    // this.box?.scale.set(this.scaleValue.value, this.scaleValue.value, this.scaleValue.value);
-    this.box?.rotateY(this.boxRotator.value);
-    this.box2?.rotateX(this.boxRotator.value);
-    this.box3?.rotateY(this.boxRotator.value);
-    this.box3?.rotateX(this.boxRotator.value);
-    // this.bloomEffect && (this.bloomEffect.intensity = this.sineRotator.value);
-    this.composer.render();
+    this.intensityAnimation.advance(time);
+    this.rotationAnimation.advance(time);
+
+    if (this.selectiveBloomEffect) {
+      this.selectiveBloomEffect.intensity = this.intensityAnimation.value;
+    }
+
+    this.toruses.forEach((torus, index) => {
+      const multipliers = ringRotations[index];
+      if (!multipliers) return;
+
+      torus.rotation.x += (multipliers[0] * this.rotationAnimation.value);
+      torus.rotation.y += (multipliers[1] * this.rotationAnimation.value);
+    });
+
+    this.effectComposer.render();
   }
 }

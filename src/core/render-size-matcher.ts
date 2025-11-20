@@ -1,3 +1,4 @@
+import type { EffectComposer } from "postprocessing";
 import type { PerspectiveCamera, WebGLRenderer } from "three";
 
 export class RenderSizeMatcher {
@@ -5,10 +6,12 @@ export class RenderSizeMatcher {
   private source?: HTMLElement;
   private observer: ResizeObserver;
   private camera: PerspectiveCamera;
+  private composer?: EffectComposer;
 
-  constructor(renderer: WebGLRenderer, camera: PerspectiveCamera) {
+  constructor(renderer: WebGLRenderer, camera: PerspectiveCamera, composer?: EffectComposer) {
     this.renderer = renderer;
     this.camera = camera;
+    this.composer = composer;
     this.observer = new ResizeObserver(this.onResize.bind(this));
   }
 
@@ -30,9 +33,14 @@ export class RenderSizeMatcher {
   }
 
   private setDimensions(rect: DOMRectReadOnly) {
-    const ratio = rect.width / rect.height;
+    const width = rect.width;
+    const height = rect.height;
+    const ratio = width / height;
 
-    this.renderer.setSize(rect.width, rect.height);
+    this.renderer.setSize(width, height);
+    if (this.composer) {
+      this.composer.setSize(width, height);
+    }
     this.camera.aspect = ratio;
     this.camera.updateProjectionMatrix();
   }
