@@ -14,7 +14,9 @@ export function Menu() {
   const menuContentClasses: string[] = [
     'overflow-scroll',
     'no-scrollbars',
-    'flex-1'
+    'flex-1',
+    'max-h-[400px]',
+    'sm:max-h-full'
   ];
   if (open) {
     menuContentClasses.push('block');
@@ -22,7 +24,7 @@ export function Menu() {
     menuContentClasses.push('hidden', 'sm:block');
   }
 
-  return <div className="w-full h-full flex flex-col">
+  return <div className="w-full h-full flex flex-col py-7">
     <button className="block sm:hidden flex-0 text-xs px-2 py-1 text-sky-300 font-bold cursor-pointer leading-none rounded-md hover:bg-sky-600/10 border-b-1 border-sky-300/10" onClick={ onToggleMenu } title={ open ? 'Close menu' : 'Expand menu' }>
       { open ? 'CLOSE' : '+' }
     </button>

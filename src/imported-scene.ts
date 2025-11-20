@@ -1,4 +1,4 @@
-import { Color, DirectionalLight, Scene, Vector3, type PerspectiveCamera, type WebGLRenderer } from "three";
+import { Color, Scene, Vector3, type PerspectiveCamera, type WebGLRenderer } from "three";
 import type { FontManager } from "./core/font-manager";
 import { RenderPass, type EffectComposer } from "postprocessing";
 import type { ExampleScene } from "./interfaces/example-scene";
@@ -37,9 +37,7 @@ export class ImportedScene implements ExampleScene {
     this.scene.add(this.library.scene);
     this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
     this.orbitControls.autoRotate = true;
-    this.orbitControls.autoRotateSpeed = 0.1;
-    this.orbitControls.enableDamping = false;
-    this.orbitControls.dampingFactor = 0;
+    this.orbitControls.autoRotateSpeed = 1;
     this.lightHelper.setup(this.scene);
     this.renderer.setAnimationLoop(this.render.bind(this));
   }
@@ -50,6 +48,7 @@ export class ImportedScene implements ExampleScene {
   }
 
   render(_time: number): void {
+    this.orbitControls?.update();
     this.effectComposer.render();
   }
 }
