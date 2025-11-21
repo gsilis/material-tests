@@ -24,9 +24,9 @@ export function Menu() {
     menuContentClasses.push('hidden', 'sm:block');
   }
 
-  return <div className="w-full h-full flex flex-col py-7">
-    <button className="block sm:hidden flex-0 text-xs px-2 py-1 text-sky-300 font-bold cursor-pointer leading-none rounded-md hover:bg-sky-600/10 border-b-1 border-sky-300/10" onClick={ onToggleMenu } title={ open ? 'Close menu' : 'Expand menu' }>
-      { open ? 'CLOSE' : '+' }
+  return <div className="w-full h-full flex flex-col">
+    <button className="block sm:hidden flex-0 text-2xl px-2 py-1 text-sky-300 font-bold cursor-pointer leading-none rounded-md hover:bg-sky-600/10 border-b-1 border-sky-300/10" onClick={ onToggleMenu } title={ open ? 'Close menu' : 'Expand menu' }>
+      { open ? '⌃' : '↓' }
     </button>
     <div className={ menuContentClasses.join(' ') }>
       { examples.examples.map((example) => {

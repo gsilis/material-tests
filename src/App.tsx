@@ -4,7 +4,7 @@ import { Viewport } from './Viewport';
 
 function App() {
   return <div className="flex flex-row h-screen">
-    <div className="picker absolute top-0 w-auto h-auto sm:w-screen sm:h-screen sm:static flex-0 sm:flex-[0_350px] bg-slate-950">
+    <div className="picker absolute top-0 right-0 w-auto h-auto sm:w-screen sm:h-screen sm:static flex-0 sm:flex-[0_350px] bg-slate-950">
       <Menu />
     </div>
     <div className="viewport flex-1 bg-slate-900 overflow-hidden">
