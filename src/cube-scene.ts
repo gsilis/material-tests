@@ -99,7 +99,6 @@ export class CubeScene implements ExampleScene {
   }
 
   private addMessage(font: Font) {
-    console.log('DONE');
     const color = (new Color()).setHex(0xFFFFFF);
     const textMaterial = new MeshBasicMaterial({ color, side: DoubleSide });
     const awaitingShape = font.generateShapes('AWAITING', 0.4);
