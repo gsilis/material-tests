@@ -16,7 +16,8 @@ export function Menu() {
     'no-scrollbars',
     'flex-1',
     'max-h-[400px]',
-    'sm:max-h-full'
+    'sm:max-h-full',
+    'sm:py-8'
   ];
   if (open) {
     menuContentClasses.push('block');
